@@ -1,0 +1,2071 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title> · 厦门大学嘉庚学院</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <style>
+        /* 保持原有所有样式不变 */
+        :root {
+            --primary: #1a5276;
+            --primary-light: #2980b9;
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --border: #dce3ea;
+            --shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+            --radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Helvetica Neue', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #1a3c56, #1a5276);
+            color: #fff;
+            padding: 0 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 62px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .app-header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-header {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .btn-header:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 2px;
+            background: #fff;
+            padding: 0 28px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 62px;
+            z-index: 90;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 13px 18px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #5d6d7e;
+            border-bottom: 3px solid transparent;
+            transition: 0.2s;
+        }
+
+        .nav-tab:hover {
+            color: var(--primary-light);
+            background: #f8fafc;
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            font-weight: 600;
+            border-bottom-color: var(--primary-light);
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 28px;
+        }
+
+        .page-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 20px 22px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-left: 5px solid transparent;
+        }
+
+        .stat-card.card-teachers {
+            border-left-color: #1a5276;
+        }
+        .stat-card.card-records {
+            border-left-color: #e67e22;
+        }
+        .stat-card.card-courses {
+            border-left-color: #16a085;
+        }
+        .stat-card.card-awards {
+            border-left-color: #8e44ad;
+        }
+        .stat-card.card-contests {
+            border-left-color: #c0392b;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: #d4e6f1;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #5d6d7e;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .chart-card {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .filter-bar {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            box-shadow: var(--shadow);
+            margin-bottom: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 100px;
+            flex: 1;
+            max-width: 180px;
+        }
+
+        .filter-group label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #5d6d7e;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 9px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: #fafbfc;
+        }
+
+        .btn-filter {
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-apply {
+            background: #2980b9;
+            color: #fff;
+        }
+        .btn-reset {
+            background: #fff;
+            border: 1.5px solid var(--border);
+            color: #2c3e50;
+        }
+
+        .table-card {
+            background: #fff;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .table-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 14px 18px;
+            border-bottom: 1px solid #eef2f7;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: #2980b9;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #2471a3;
+        }
+        .btn-outline {
+            background: #fff;
+            border: 1.5px solid var(--border);
+            color: #2c3e50;
+        }
+        .btn-outline:hover {
+            background: #f0f4f8;
+        }
+        .btn-danger {
+            background: #c0392b;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #a93226;
+        }
+        .btn-warning {
+            background: #e67e22;
+            color: #fff;
+        }
+        .btn-warning:hover {
+            background: #d35400;
+        }
+        .btn-success {
+            background: #27ae60;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #229954;
+        }
+        .btn-info {
+            background: #3498db;
+            color: #fff;
+        }
+        .btn-info:hover {
+            background: #2980b9;
+        }
+        .btn-xs {
+            padding: 4px 12px;
+            font-size: 0.75rem;
+        }
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 0.8rem;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            max-height: 55vh;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        thead th {
+            background: #f4f7fa;
+            padding: 11px 14px;
+            text-align: left;
+            font-weight: 700;
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+        }
+
+        thead th.th-checkbox {
+            width: 40px;
+            text-align: center;
+        }
+
+        tbody td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        tbody td.td-checkbox {
+            text-align: center;
+        }
+
+        tbody tr.row-selected {
+            background: #e8f4fd;
+        }
+
+        .level-tag,
+        .dim-tag,
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .level-国家级 {
+            background: #f9e79f;
+            color: #7d6608;
+        }
+        .level-省级 {
+            background: #d5f5e3;
+            color: #1a6b3c;
+        }
+        .level-校级 {
+            background: #d4e6f1;
+            color: #2471a3;
+        }
+        .level-院级 {
+            background: #fdebd0;
+            color: #b9770e;
+        }
+        .level-地市级 {
+            background: #fcf3cf;
+            color: #9a7d0a;
+        }
+
+        .dim-tag {
+            background: #e8f4fd;
+            color: #2471a3;
+        }
+
+        .status-active {
+            background: #d5f5e3;
+            color: #1a6b3c;
+        }
+        .status-inactive {
+            background: #fdedec;
+            color: #c0392b;
+        }
+
+        .import-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .cx-card {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid #edf2f7;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            background: #e8f0fe;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #1a5276;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .btn-upload {
+            background: #f0f5ff;
+            border: 1.5px dashed #2980b9;
+            color: #2980b9;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+        }
+
+        .btn-upload:hover {
+            background: #e4efff;
+            border-style: solid;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-dialog {
+            background: #fff;
+            border-radius: var(--radius);
+            width: 90%;
+            max-width: 650px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-dialog.wide {
+            max-width: 1000px;
+        }
+
+        .modal-header {
+            padding: 16px 22px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 2;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: #f0f0f0;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .modal-body {
+            padding: 20px 22px;
+        }
+
+        .modal-footer {
+            padding: 14px 22px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 500;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(120px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            background: #27ae60;
+        }
+        .toast.error {
+            background: #c0392b;
+        }
+        .toast.info {
+            background: #2980b9;
+        }
+        .toast.warning {
+            background: #e67e22;
+        }
+
+        .batch-info {
+            font-size: 0.82rem;
+            color: #5d6d7e;
+            margin-left: 6px;
+            display: none;
+        }
+        .batch-info.visible {
+            display: inline;
+        }
+
+        .selected-count {
+            font-weight: 700;
+            color: #c0392b;
+        }
+
+        .mini-chart {
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .profile-stat-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 12px 20px;
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .profile-stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a5276;
+        }
+
+        .profile-stat-label {
+            font-size: 0.8rem;
+            color: #5d6d7e;
+        }
+
+        .profile-section {
+            margin-top: 20px;
+            border-top: 1px solid #eef2f7;
+            padding-top: 16px;
+        }
+
+        .profile-section h4 {
+            margin-bottom: 12px;
+            color: #1a5276;
+        }
+
+        .profile-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .profile-list li {
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.85rem;
+        }
+
+        .mt-2 {
+            margin-top: 10px;
+        }
+        .import-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .toolbar-right {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <h1>📋 教师发展档案袋管理系统</h1>
+        <div class="header-actions">
+            <button class="btn-header" id="loginBtn" onclick="window.showLoginModal()">🔐 管理员登录</button>
+            <button class="btn-header" id="logoutBtn" style="display:none;" onclick="window.logout()">🚪 退出登录</button>
+        </div>
+    </header>
+    <nav class="nav-tabs" id="navTabs">
+        <button class="nav-tab active" data-page="dashboard">📊 数据概览</button>
+        <button class="nav-tab" data-page="teachers">👨‍🏫 教师管理</button>
+        <button class="nav-tab" data-page="trainings">📚 培训记录</button>
+        <button class="nav-tab" data-page="courses">🏆 一流课程</button>
+        <button class="nav-tab" data-page="awards">🎖️ 评优评先</button>
+        <button class="nav-tab" data-page="contests">🏅 教学竞赛</button>
+        <button class="nav-tab" data-page="import">📥 数据导入</button>
+    </nav>
+    <div class="main-container">
+        <div class="page-section active" id="page-dashboard">
+            <div class="filter-bar" id="dashboardFilterBar">
+                <div class="filter-group"><label>教学单位</label><select id="dashboardDeptFilter"><option value="">全部单位</option></select></div>
+                <button class="btn-filter btn-apply" onclick="window.applyDashboardDeptFilter()">筛选</button>
+                <button class="btn-filter btn-reset" onclick="window.resetDashboardDeptFilter()">重置</button>
+            </div>
+            <div class="stats-row" id="statsRow"></div>
+            <div class="charts-row" id="chartsRow"></div>
+        </div>
+        <div class="page-section" id="page-teachers">
+            <div class="filter-bar" id="teacherFilterBar"></div>
+            <div class="table-card" id="teacherTableCard"></div>
+        </div>
+        <div class="page-section" id="page-trainings">
+            <div class="filter-bar" id="trainingFilterBar"></div>
+            <div class="table-card" id="trainingTableCard"></div>
+        </div>
+        <div class="page-section" id="page-courses">
+            <div class="filter-bar" id="courseFilterBar"></div>
+            <div class="chart-card" style="margin-bottom: 18px;">
+                <h3>📊 当前课程级别分布</h3>
+                <div class="mini-chart"><canvas id="courseLevelChart" width="300" height="200"></canvas></div>
+            </div>
+            <div class="table-card" id="courseTableCard"></div>
+        </div>
+        <div class="page-section" id="page-awards">
+            <div class="filter-bar" id="awardFilterBar"></div>
+            <div class="table-card" id="awardTableCard"></div>
+        </div>
+        <div class="page-section" id="page-contests">
+            <div class="filter-bar" id="contestFilterBar"></div>
+            <div class="table-card" id="contestTableCard"></div>
+        </div>
+        <div class="page-section" id="page-import">
+            <div style="margin-bottom:24px;">
+                <h2>📂 批量导入与数据维护</h2>
+            </div>
+            <div class="import-grid" id="importCards"></div>
+            <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+                <button class="btn btn-success" onclick="window.exportAllData()">💾 备份全部数据</button>
+                <button class="btn btn-danger" onclick="window.clearAllData()">🗑️ 清除全部数据</button>
+            </div>
+            <div class="tips-card" style="background:#f9fcff; border:1px solid #d4e6f1; border-radius:16px; padding:20px; margin-top:20px;">
+                <h4>💡 说明</h4>
+                <ul>
+                    <li>每个模块独立导入，支持Excel/CSV，自动创建或匹配教师。</li>
+                    <li>管理员登录后（账号 jxcj / 密码 805807）方可执行导入、编辑、删除、备份恢复等操作。</li>
+                    <li>所有模块均支持勾选多条记录后批量删除（全选/批量删除）。</li>
+                    <li>教师管理页面新增"画像"按钮，可查看每位教师的成果统计与详细列表。</li>
+                    <li>每条记录均可单独编辑（点击"编辑"按钮），也可通过"添加"按钮新增记录。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录模态框 -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>管理员登录</h3><button class="modal-close" onclick="window.closeLoginModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group"><label>账号</label><input type="text" id="loginUsername" placeholder="请输入账号"></div>
+                <div class="form-group"><label>密码</label><input type="password" id="loginPassword" placeholder="请输入密码"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="window.closeLoginModal()">取消</button>
+                <button class="btn btn-primary" onclick="window.doLogin()">登录</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 教师画像模态框 -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal-dialog wide">
+            <div class="modal-header">
+                <h3>📋 教师画像</h3><button class="modal-close" onclick="window.closeProfileModal()">✕</button>
+            </div>
+            <div class="modal-body" id="profileContent"></div>
+            <div class="modal-footer"><button class="btn btn-outline" onclick="window.closeProfileModal()">关闭</button></div>
+        </div>
+    </div>
+
+    <!-- 通用编辑/添加模态框 -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="editModalTitle">编辑记录</h3><button class="modal-close" onclick="window.closeEditModal()">✕</button>
+            </div>
+            <div class="modal-body" id="editModalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="window.closeEditModal()">取消</button>
+                <button class="btn btn-primary" onclick="window.saveEditRecord()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ---------- 管理员权限控制 ----------
+            let isAdmin = false;
+            const ADMIN_USER = 'jxcj';
+            const ADMIN_PWD = '805807';
+
+            function checkLoginStatus() {
+                const logged = sessionStorage.getItem('admin_logged') === 'true';
+                isAdmin = logged;
+                const loginBtn = document.getElementById('loginBtn');
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (loginBtn) loginBtn.style.display = isAdmin ? 'none' : 'inline-block';
+                if (logoutBtn) logoutBtn.style.display = isAdmin ? 'inline-block' : 'none';
+                refreshAllUIPermissions();
+                const activePage = document.querySelector('.page-section.active')?.id.replace('page-', '');
+                if (activePage === 'teachers') renderTeachers();
+                else if (activePage === 'trainings') renderTrainings();
+                else if (activePage === 'courses') renderCourses();
+                else if (activePage === 'awards') renderAwards();
+                else if (activePage === 'contests') renderContests();
+                else if (activePage === 'import') renderImportCards();
+                else refreshDashboardWithDept();
+            }
+            window.showLoginModal = function() {
+                document.getElementById('loginModal').classList.add('show');
+                document.getElementById('loginUsername').value = '';
+                document.getElementById('loginPassword').value = '';
+            };
+            window.closeLoginModal = function() { document.getElementById('loginModal').classList.remove('show'); };
+            window.doLogin = function() {
+                const username = document.getElementById('loginUsername')?.value.trim() || '';
+                const password = document.getElementById('loginPassword')?.value || '';
+                if (username === ADMIN_USER && password === ADMIN_PWD) {
+                    isAdmin = true;
+                    sessionStorage.setItem('admin_logged', 'true');
+                    window.closeLoginModal();
+                    document.getElementById('loginBtn').style.display = 'none';
+                    document.getElementById('logoutBtn').style.display = 'inline-block';
+                    toast('登录成功，现在可以进行数据维护操作', 'success');
+                    refreshAllUIPermissions();
+                    const activePage = document.querySelector('.page-section.active')?.id.replace('page-', '');
+                    if (activePage === 'teachers') renderTeachers();
+                    else if (activePage === 'trainings') renderTrainings();
+                    else if (activePage === 'courses') renderCourses();
+                    else if (activePage === 'awards') renderAwards();
+                    else if (activePage === 'contests') renderContests();
+                    else if (activePage === 'import') renderImportCards();
+                    else refreshDashboardWithDept();
+                } else toast('账号或密码错误', 'error');
+            };
+            window.logout = function() {
+                isAdmin = false;
+                sessionStorage.removeItem('admin_logged');
+                document.getElementById('loginBtn').style.display = 'inline-block';
+                document.getElementById('logoutBtn').style.display = 'none';
+                toast('已退出登录，仅可查看数据', 'info');
+                refreshAllUIPermissions();
+                const activePage = document.querySelector('.page-section.active')?.id.replace('page-', '');
+                if (activePage === 'teachers') renderTeachers();
+                else if (activePage === 'trainings') renderTrainings();
+                else if (activePage === 'courses') renderCourses();
+                else if (activePage === 'awards') renderAwards();
+                else if (activePage === 'contests') renderContests();
+                else if (activePage === 'import') renderImportCards();
+                else refreshDashboardWithDept();
+            };
+
+            function requireAdmin(showTip = true) {
+                if (!isAdmin) { if (showTip) toast('请先登录管理员账号（jxcj）进行操作', 'warning');
+                    return false; }
+                return true;
+            }
+
+            function refreshAllUIPermissions() {
+                const headerBtns = document.querySelectorAll('.header-actions .btn-header');
+                headerBtns.forEach(btn => {
+                    if (btn.id !== 'loginBtn' && btn.id !== 'logoutBtn') {
+                        if (isAdmin) { btn.style.opacity = '1';
+                            btn.style.pointerEvents = 'auto'; } else { btn.style.opacity = '0.6';
+                            btn.style.pointerEvents = 'none'; }
+                    }
+                });
+            }
+
+            // ---------- 数据存储 ----------
+            const T_KEY = 'pf_teachers',
+                R_KEY = 'pf_trainings',
+                C_KEY = 'pf_courses',
+                A_KEY = 'pf_awards',
+                CT_KEY = 'pf_contests';
+            const getT = () => { let t = JSON.parse(localStorage.getItem(T_KEY) || '[]');
+                t.forEach(te => { if (!te.status) te.status = '在职'; }); return t; };
+            const saveT = d => localStorage.setItem(T_KEY, JSON.stringify(d));
+            const getR = () => JSON.parse(localStorage.getItem(R_KEY) || '[]');
+            const saveR = d => localStorage.setItem(R_KEY, JSON.stringify(d));
+            const getC = () => JSON.parse(localStorage.getItem(C_KEY) || '[]');
+            const saveC = d => localStorage.setItem(C_KEY, JSON.stringify(d));
+            const getA = () => JSON.parse(localStorage.getItem(A_KEY) || '[]');
+            const saveA = d => localStorage.setItem(A_KEY, JSON.stringify(d));
+            const getCT = () => JSON.parse(localStorage.getItem(CT_KEY) || '[]');
+            const saveCT = d => localStorage.setItem(CT_KEY, JSON.stringify(d));
+            const genId = () => 'id_' + Date.now() + Math.random().toString(36).substr(2, 8);
+
+            function toast(msg, type = 'info') {
+                let c = document.getElementById('toastContainer');
+                if (!c) { let d = document.createElement('div');
+                    d.id = 'toastContainer';
+                    d.className = 'toast-container';
+                    document.body.appendChild(d);
+                    c = d; }
+                let t = document.createElement('div');
+                t.className = 'toast ' + type;
+                t.textContent = msg;
+                c.appendChild(t);
+                setTimeout(() => { t.style.opacity = '0';
+                    setTimeout(() => t.remove(), 300); }, 3000);
+            }
+
+            function parseExcel(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        try {
+                            const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                            resolve(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' }));
+                        } catch (err) { reject(err); }
+                    };
+                    reader.onerror = () => reject(new Error('读取失败'));
+                    reader.readAsArrayBuffer(file);
+                });
+            }
+
+            function findOrCreateTeacherByName(name, teachersArr) {
+                let teacher = teachersArr.find(t => t.name === name);
+                if (!teacher) {
+                    teacher = {
+                        id: genId(),
+                        name: name,
+                        employeeId: 'auto_' + Date.now() + '_' + Math.floor(Math.random() * 10000),
+                        department: '',
+                        title: '',
+                        education: '',
+                        joinYear: null,
+                        status: '在职'
+                    };
+                    teachersArr.push(teacher);
+                }
+                return teacher;
+            }
+
+            function refreshAllUI() {
+                refreshDashboardWithDept();
+                renderTeachers();
+                renderTrainings();
+                renderCourses();
+                renderAwards();
+                renderContests();
+                updateDashboardDeptOptions();
+            }
+
+            // 概览页
+            let currentDashboardDept = '';
+            window.updateDashboardDeptOptions = () => {
+                let teachers = getT();
+                let depts = [...new Set(teachers.map(t => t.department).filter(Boolean))];
+                let sel = document.getElementById('dashboardDeptFilter');
+                if (sel) {
+                    sel.innerHTML = '<option value="">全部单位</option>' + depts.map(d => `<option value="${d}">${d}</option>`)
+                        .join('');
+                    sel.value = currentDashboardDept;
+                }
+            };
+            window.applyDashboardDeptFilter = () => {
+                currentDashboardDept = document.getElementById('dashboardDeptFilter').value;
+                refreshDashboardWithDept();
+                toast(`筛选：${currentDashboardDept||'全部单位'}`, 'info');
+            };
+            window.resetDashboardDeptFilter = () => {
+                document.getElementById('dashboardDeptFilter').value = '';
+                currentDashboardDept = '';
+                refreshDashboardWithDept();
+                toast('已重置筛选', 'info');
+            };
+            window.refreshDashboardWithDept = function() {
+                let teachers = getT(),
+                    trainings = getR(),
+                    courses = getC(),
+                    awards = getA(),
+                    contests = getCT();
+                if (currentDashboardDept) {
+                    const ids = teachers.filter(t => t.department === currentDashboardDept).map(t => t.id);
+                    teachers = teachers.filter(t => t.department === currentDashboardDept);
+                    trainings = trainings.filter(r => ids.includes(r.teacherId));
+                    courses = courses.filter(c => ids.includes(c.teacherId));
+                    awards = awards.filter(a => ids.includes(a.teacherId));
+                    contests = contests.filter(c => ids.includes(c.teacherId));
+                }
+                document.getElementById('statsRow').innerHTML = `
+              <div class="stat-card card-teachers"><div class="stat-icon">👨‍🏫</div><div><div class="stat-value">${teachers.length}</div><div class="stat-label">教师总数</div></div></div>
+              <div class="stat-card card-records"><div class="stat-icon">📚</div><div><div class="stat-value">${trainings.length}</div><div class="stat-label">培训记录</div></div></div>
+              <div class="stat-card card-courses"><div class="stat-icon">🏆</div><div><div class="stat-value">${courses.length}</div><div class="stat-label">一流课程</div></div></div>
+              <div class="stat-card card-awards"><div class="stat-icon">🎖️</div><div><div class="stat-value">${awards.length}</div><div class="stat-label">评优评先</div></div></div>
+              <div class="stat-card card-contests"><div class="stat-icon">🏅</div><div><div class="stat-value">${contests.length}</div><div class="stat-label">教学竞赛</div></div></div>`;
+                let deptMap = {};
+                teachers.forEach(t => { let d = t.department || '未分配';
+                    deptMap[d] = (deptMap[d] || 0) + 1; });
+                let dimMap = {};
+                trainings.forEach(r => { let d = r.dimension || '未分类';
+                    dimMap[d] = (dimMap[d] || 0) + 1; });
+                let levelMap = {};
+                courses.forEach(c => { let l = c.level || '未分类';
+                    levelMap[l] = (levelMap[l] || 0) + 1; });
+                let awardLevelMap = {};
+                awards.forEach(a => { let l = a.level || '未分类';
+                    awardLevelMap[l] = (awardLevelMap[l] || 0) + 1; });
+                document.getElementById('chartsRow').innerHTML = `
+              <div class="chart-card"><h3>${currentDashboardDept?'职称分布':'教学单位分布'}</h3><div class="chart-wrap"><canvas id="chartDept"></canvas></div></div>
+              <div class="chart-card"><h3>培训维度统计</h3><div class="chart-wrap"><canvas id="chartDim"></canvas></div></div>
+              <div class="chart-card"><h3>一流课程级别分布</h3><div class="chart-wrap"><canvas id="chartCourseLevel"></canvas></div></div>
+              <div class="chart-card"><h3>评优评先级别分布</h3><div class="chart-wrap"><canvas id="chartAwardLevel"></canvas></div></div>`;
+                if (currentDashboardDept) {
+                    let titleMap = {};
+                    teachers.forEach(t => { let ti = t.title || '未填';
+                        titleMap[ti] = (titleMap[ti] || 0) + 1; });
+                    new Chart(document.getElementById('chartDept'), {
+                        type: 'bar',
+                        data: {
+                            labels: Object.keys(titleMap),
+                            datasets: [{ label: '人数', data: Object.values(titleMap),
+                                backgroundColor: 'rgba(41,128,185,0.7)' }]
+                        }
+                    });
+                } else {
+                    new Chart(document.getElementById('chartDept'), {
+                        type: 'bar',
+                        data: {
+                            labels: Object.keys(deptMap),
+                            datasets: [{ label: '教师人数', data: Object.values(deptMap),
+                                backgroundColor: 'rgba(41,128,185,0.7)' }]
+                        }
+                    });
+                }
+                new Chart(document.getElementById('chartDim'), { type: 'doughnut', data: { labels: Object.keys(
+                        dimMap), datasets: [{ data: Object.values(dimMap) }] } });
+                new Chart(document.getElementById('chartCourseLevel'), { type: 'pie', data: { labels: Object.keys(
+                        levelMap), datasets: [{ data: Object.values(levelMap) }] } });
+                new Chart(document.getElementById('chartAwardLevel'), { type: 'pie', data: { labels: Object.keys(
+                        awardLevelMap), datasets: [{ data: Object.values(awardLevelMap) }] } });
+            };
+
+            // ========== 通用批量删除辅助函数 ==========
+            function batchDeleteHelper(prefix, getData, saveData, renderFunc) {
+                if (!requireAdmin()) return;
+                const cbs = document.querySelectorAll(`.${prefix}-checkbox:checked`);
+                const ids = Array.from(cbs).map(cb => cb.dataset.id);
+                if (ids.length === 0) return toast('请勾选记录', 'warning');
+                if (!confirm(`确定删除选中的 ${ids.length} 条记录？`)) return;
+                const newData = getData().filter(r => !ids.includes(r.id));
+                saveData(newData);
+                renderFunc();
+                refreshAllUI();
+                toast(`已删除 ${ids.length} 条`, 'success');
+            }
+
+            function toggleSelectAllHelper(prefix) {
+                const selectAll = document.getElementById(`selectAll${prefix.charAt(0).toUpperCase()+prefix.slice(1)}s`);
+                if (!selectAll) return;
+                const checked = selectAll.checked;
+                document.querySelectorAll(`.${prefix}-checkbox`).forEach(cb => cb.checked = checked);
+                updateBatchUIHelper(prefix);
+            }
+
+            function updateBatchUIHelper(prefix) {
+                const cbs = document.querySelectorAll(`.${prefix}-checkbox:checked`);
+                const count = cbs.length;
+                const batchInfo = document.getElementById(`${prefix}BatchInfo`);
+                const selectedCount = document.getElementById(`${prefix}SelectedCount`);
+                const btnBatch = document.getElementById(
+                    `btnBatchDelete${prefix.charAt(0).toUpperCase()+prefix.slice(1)}`);
+                if (batchInfo) { if (count > 0) batchInfo.classList.add('visible');
+                    else batchInfo.classList.remove('visible'); }
+                if (selectedCount) selectedCount.textContent = count;
+                if (btnBatch) btnBatch.disabled = count === 0;
+                const allCbs = document.querySelectorAll(`.${prefix}-checkbox`);
+                const selectAll = document.getElementById(`selectAll${prefix.charAt(0).toUpperCase()+prefix.slice(1)}s`);
+                if (selectAll) { selectAll.checked = allCbs.length > 0 && count === allCbs.length;
+                    selectAll.indeterminate = count > 0 && count < allCbs.length; }
+                document.querySelectorAll(`.${prefix}-checkbox`).forEach(cb => {
+                    const row = cb.closest('tr');
+                    if (row) { if (cb.checked) row.classList.add('row-selected');
+                        else row.classList.remove('row-selected'); }
+                });
+            }
+
+            // ========== 教师画像功能 ==========
+            window.viewTeacherProfile = function(teacherId) {
+                const teacher = getT().find(t => t.id === teacherId);
+                if (!teacher) { toast('教师不存在', 'error'); return; }
+                const trainings = getR().filter(r => r.teacherId === teacherId);
+                const courses = getC().filter(c => c.teacherId === teacherId);
+                const awards = getA().filter(a => a.teacherId === teacherId);
+                const contests = getCT().filter(c => c.teacherId === teacherId);
+                const totalCredits = trainings.reduce((sum, t) => sum + (t.credits || 0), 0);
+                let html =
+                    `<div style="margin-bottom:20px;"><h3>${escapeHtml(teacher.name)}</h3><p>工号：${escapeHtml(teacher.employeeId)} | 单位：${escapeHtml(teacher.department||'未设置')} | 职称：${escapeHtml(teacher.title||'未设置')} | 状态：${teacher.status==='在职'?'在职':'离职'}</p></div>
+            <div class="profile-stats"><div class="profile-stat-card"><div class="profile-stat-number">${trainings.length}</div><div class="profile-stat-label">培训次数</div></div>
+            <div class="profile-stat-card"><div class="profile-stat-number">${totalCredits}</div><div class="profile-stat-label">培训学分</div></div>
+            <div class="profile-stat-card"><div class="profile-stat-number">${courses.length}</div><div class="profile-stat-label">一流课程</div></div>
+            <div class="profile-stat-card"><div class="profile-stat-number">${awards.length}</div><div class="profile-stat-label">评优评先</div></div>
+            <div class="profile-stat-card"><div class="profile-stat-number">${contests.length}</div><div class="profile-stat-label">教学竞赛</div></div></div>`;
+                if (trainings.length) html +=
+                    `<div class="profile-section"><h4>📚 培训记录</h4><ul class="profile-list">${trainings.map(t=>`<li><strong>${escapeHtml(t.trainingName)}</strong> (${t.year}) - ${t.dimension} 学分:${t.credits||0}</li>`).join('')}</ul></div>`;
+                else html += `<div class="profile-section"><h4>📚 培训记录</h4><p>暂无</p></div>`;
+                if (courses.length) html +=
+                    `<div class="profile-section"><h4>🏆 一流课程</h4><ul class="profile-list">${courses.map(c=>`<li><strong>${escapeHtml(c.courseName)}</strong> (${c.year}) - ${c.level}</li>`).join('')}</ul></div>`;
+                else html += `<div class="profile-section"><h4>🏆 一流课程</h4><p>暂无</p></div>`;
+                if (awards.length) html +=
+                    `<div class="profile-section"><h4>🎖️ 评优评先</h4><ul class="profile-list">${awards.map(a=>`<li><strong>${escapeHtml(a.awardName)}</strong> (${a.year}) - ${a.level}</li>`).join('')}</ul></div>`;
+                else html += `<div class="profile-section"><h4>🎖️ 评优评先</h4><p>暂无</p></div>`;
+                if (contests.length) html +=
+                    `<div class="profile-section"><h4>🏅 教学竞赛</h4><ul class="profile-list">${contests.map(c=>`<li><strong>${escapeHtml(c.contestName)}</strong> (${c.year}) - ${c.level} 获奖:${c.awardRank||'未填写'}</li>`).join('')}</ul></div>`;
+                else html += `<div class="profile-section"><h4>🏅 教学竞赛</h4><p>暂无</p></div>`;
+                document.getElementById('profileContent').innerHTML = html;
+                document.getElementById('profileModal').classList.add('show');
+            };
+            window.closeProfileModal = function() { document.getElementById('profileModal').classList.remove('show'); };
+
+            // ========== 编辑/添加功能核心 ==========
+            let currentEditType = null,
+                currentEditId = null;
+
+            window.openEditModal = function(type, id) {
+                if (!requireAdmin()) return;
+                currentEditType = type;
+                currentEditId = id;
+                let record = null,
+                    teachers = getT();
+                if (type === 'teacher') record = teachers.find(t => t.id === id);
+                else if (type === 'training') record = getR().find(r => r.id === id);
+                else if (type === 'course') record = getC().find(c => c.id === id);
+                else if (type === 'award') record = getA().find(a => a.id === id);
+                else if (type === 'contest') record = getCT().find(c => c.id === id);
+                if (!record) { toast('记录不存在', 'error'); return; }
+                let html = buildFormHTML(type, record, teachers);
+                document.getElementById('editModalBody').innerHTML = html;
+                setFormValues(type, record);
+                document.getElementById('editModalTitle').innerText =
+                    `编辑${type==='teacher'?'教师':type==='training'?'培训':type==='course'?'课程':type==='award'?'评优':'竞赛'}`;
+                document.getElementById('editModal').classList.add('show');
+            };
+
+            window.openAddModal = function(type) {
+                if (!requireAdmin()) return;
+                currentEditType = type;
+                currentEditId = null;
+                let teachers = getT();
+                if ((type === 'training' || type === 'course' || type === 'award' || type === 'contest') && teachers
+                    .length === 0) {
+                    toast('请先在教师管理中添加教师', 'warning');
+                    return;
+                }
+                let html = buildFormHTML(type, null, teachers);
+                document.getElementById('editModalBody').innerHTML = html;
+                setDefaultFormValues(type);
+                document.getElementById('editModalTitle').innerText =
+                    `添加${type==='teacher'?'教师':type==='training'?'培训':type==='course'?'课程':type==='award'?'评优':'竞赛'}`;
+                document.getElementById('editModal').classList.add('show');
+            };
+
+            function buildFormHTML(type, record, teachers) {
+                let html = '';
+                const isEdit = record !== null;
+                if (type === 'teacher') {
+                    html = `
+                <div class="form-group"><label>姓名</label><input id="editName" value="${isEdit?escapeHtml(record.name):''}"></div>
+                <div class="form-group"><label>工号</label><input id="editEmpId" value="${isEdit?escapeHtml(record.employeeId):''}"></div>
+                <div class="form-group"><label>教学单位</label><input id="editDept" value="${isEdit?escapeHtml(record.department||''):''}"></div>
+                <div class="form-group"><label>职称</label><select id="editTitle"><option>教授</option><option>副教授</option><option>讲师</option><option>助教</option></select></div>
+                <div class="form-group"><label>学历</label><select id="editEdu"><option>博士</option><option>硕士</option><option>本科</option></select></div>
+                <div class="form-group"><label>入职年份</label><input id="editJoinYear" type="number" value="${isEdit&&record.joinYear?record.joinYear:''}"></div>
+                <div class="form-group"><label>在职状态</label><select id="editStatus"><option>在职</option><option>离职</option></select></div>`;
+                } else if (type === 'training') {
+                    const teacherOptions = teachers.map(t =>
+                        `<option value="${t.id}" ${isEdit&&t.id===record.teacherId?'selected':''}>${escapeHtml(t.name)} (${escapeHtml(t.department||'')})</option>`
+                        ).join('');
+                    html = `
+                <div class="form-group"><label>教师</label><select id="editTeacherId"><option value="">请选择教师</option>${teacherOptions}</select></div>
+                <div class="form-group"><label>培训名称</label><input id="editName" value="${isEdit?escapeHtml(record.trainingName):''}"></div>
+                <div class="form-group"><label>维度</label><select id="editDim"><option>教学能力</option><option>课程思政</option><option>师德师风</option><option>其他</option></select></div>
+                <div class="form-group"><label>年份</label><input id="editYear" type="number" value="${isEdit?record.year:new Date().getFullYear()}"></div>
+                <div class="form-group"><label>学分</label><input id="editCredits" type="number" step="0.5" value="${isEdit?(record.credits||0):0}"></div>
+                <div class="form-group"><label>开始日期</label><input id="editStart" type="date" value="${isEdit?(record.startDate||''):''}"></div>
+                <div class="form-group"><label>结束日期</label><input id="editEnd" type="date" value="${isEdit?(record.endDate||''):''}"></div>`;
+                } else if (type === 'course') {
+                    const teacherOptions = teachers.map(t =>
+                        `<option value="${t.id}" ${isEdit&&t.id===record.teacherId?'selected':''}>${escapeHtml(t.name)} (${escapeHtml(t.department||'')})</option>`
+                        ).join('');
+                    html = `
+                <div class="form-group"><label>教师</label><select id="editTeacherId"><option value="">请选择教师</option>${teacherOptions}</select></div>
+                <div class="form-group"><label>课程名称</label><input id="editName" value="${isEdit?escapeHtml(record.courseName):''}"></div>
+                <div class="form-group"><label>级别</label><select id="editLevel"><option>国家级</option><option>省级</option><option>校级</option></select></div>
+                <div class="form-group"><label>年份</label><input id="editYear" type="number" value="${isEdit?record.year:new Date().getFullYear()}"></div>
+                <div class="form-group"><label>类别</label><input id="editCategory" value="${isEdit?escapeHtml(record.category||''):''}"></div>`;
+                } else if (type === 'award') {
+                    const teacherOptions = teachers.map(t =>
+                        `<option value="${t.id}" ${isEdit&&t.id===record.teacherId?'selected':''}>${escapeHtml(t.name)} (${escapeHtml(t.department||'')})</option>`
+                        ).join('');
+                    html = `
+                <div class="form-group"><label>教师</label><select id="editTeacherId"><option value="">请选择教师</option>${teacherOptions}</select></div>
+                <div class="form-group"><label>奖励名称</label><input id="editName" value="${isEdit?escapeHtml(record.awardName):''}"></div>
+                <div class="form-group"><label>级别</label><select id="editLevel"><option>国家级</option><option>省级</option><option>校级</option><option>院级</option></select></div>
+                <div class="form-group"><label>年份</label><input id="editYear" type="number" value="${isEdit?record.year:new Date().getFullYear()}"></div>
+                <div class="form-group"><label>备注</label><input id="editRemarks" value="${isEdit?escapeHtml(record.remarks||''):''}"></div>`;
+                } else if (type === 'contest') {
+                    const teacherOptions = teachers.map(t =>
+                        `<option value="${t.id}" ${isEdit&&t.id===record.teacherId?'selected':''}>${escapeHtml(t.name)} (${escapeHtml(t.department||'')})</option>`
+                        ).join('');
+                    html = `
+                <div class="form-group"><label>教师</label><select id="editTeacherId"><option value="">请选择教师</option>${teacherOptions}</select></div>
+                <div class="form-group"><label>竞赛名称</label><input id="editName" value="${isEdit?escapeHtml(record.contestName):''}"></div>
+                <div class="form-group"><label>级别</label><select id="editLevel"><option>国家级</option><option>省级</option><option>地市级</option><option>校级</option></select></div>
+                <div class="form-group"><label>获奖等级</label><select id="editAwardRank"><option>一等奖</option><option>二等奖</option><option>三等奖</option><option>优秀奖</option></select></div>
+                <div class="form-group"><label>年份</label><input id="editYear" type="number" value="${isEdit?record.year:new Date().getFullYear()}"></div>
+                <div class="form-group"><label>备注</label><input id="editRemarks" value="${isEdit?escapeHtml(record.remarks||''):''}"></div>`;
+                }
+                return html;
+            }
+
+            function setFormValues(type, record) {
+                if (type === 'teacher') {
+                    document.getElementById('editTitle').value = record.title || '教授';
+                    document.getElementById('editEdu').value = record.education || '博士';
+                    document.getElementById('editStatus').value = record.status || '在职';
+                } else if (type === 'training') {
+                    document.getElementById('editDim').value = record.dimension || '教学能力';
+                } else if (type === 'course') {
+                    document.getElementById('editLevel').value = record.level;
+                } else if (type === 'award') {
+                    document.getElementById('editLevel').value = record.level;
+                } else if (type === 'contest') {
+                    document.getElementById('editLevel').value = record.level;
+                    document.getElementById('editAwardRank').value = record.awardRank || '一等奖';
+                }
+            }
+
+            function setDefaultFormValues(type) {
+                if (type === 'teacher') {
+                    document.getElementById('editTitle').value = '讲师';
+                    document.getElementById('editEdu').value = '硕士';
+                    document.getElementById('editStatus').value = '在职';
+                } else if (type === 'training') {
+                    document.getElementById('editDim').value = '教学能力';
+                    const sel = document.getElementById('editTeacherId');
+                    if (sel && sel.options.length > 1) sel.selectedIndex = 1;
+                } else if (type === 'course') {
+                    document.getElementById('editLevel').value = '校级';
+                    const sel = document.getElementById('editTeacherId');
+                    if (sel && sel.options.length > 1) sel.selectedIndex = 1;
+                } else if (type === 'award') {
+                    document.getElementById('editLevel').value = '校级';
+                    const sel = document.getElementById('editTeacherId');
+                    if (sel && sel.options.length > 1) sel.selectedIndex = 1;
+                } else if (type === 'contest') {
+                    document.getElementById('editLevel').value = '校级';
+                    document.getElementById('editAwardRank').value = '一等奖';
+                    const sel = document.getElementById('editTeacherId');
+                    if (sel && sel.options.length > 1) sel.selectedIndex = 1;
+                }
+            }
+
+            window.saveEditRecord = function() {
+                if (!requireAdmin()) return;
+                const isAdd = currentEditId === null;
+                if (currentEditType === 'teacher') {
+                    let teachers = getT();
+                    const nameVal = document.getElementById('editName').value.trim();
+                    if (!nameVal) { toast('请输入教师姓名', 'warning'); return; }
+                    if (isAdd) {
+                        const newTeacher = {
+                            id: genId(),
+                            name: nameVal,
+                            employeeId: document.getElementById('editEmpId').value.trim() || ('auto_' + Date
+                                .now()),
+                            department: document.getElementById('editDept').value.trim(),
+                            title: document.getElementById('editTitle').value,
+                            education: document.getElementById('editEdu').value,
+                            joinYear: parseInt(document.getElementById('editJoinYear').value) || null,
+                            status: document.getElementById('editStatus').value
+                        };
+                        teachers.push(newTeacher);
+                        saveT(teachers);
+                        toast('教师添加成功', 'success');
+                    } else {
+                        let idx = teachers.findIndex(t => t.id === currentEditId);
+                        if (idx >= 0) {
+                            teachers[idx] = {
+                                ...teachers[idx],
+                                name: nameVal,
+                                employeeId: document.getElementById('editEmpId').value.trim(),
+                                department: document.getElementById('editDept').value.trim(),
+                                title: document.getElementById('editTitle').value,
+                                education: document.getElementById('editEdu').value,
+                                joinYear: parseInt(document.getElementById('editJoinYear').value) || null,
+                                status: document.getElementById('editStatus').value
+                            };
+                            saveT(teachers);
+                            toast('教师更新成功', 'success');
+                        }
+                    }
+                } else if (currentEditType === 'training') {
+                    let trainings = getR();
+                    const teacherId = document.getElementById('editTeacherId').value;
+                    if (!teacherId) { toast('请选择教师', 'warning'); return; }
+                    const trainingName = document.getElementById('editName').value.trim();
+                    if (!trainingName) { toast('请输入培训名称', 'warning'); return; }
+                    const teacher = getT().find(t => t.id === teacherId);
+                    if (!teacher) { toast('教师不存在', 'error'); return; }
+                    const yearVal = parseInt(document.getElementById('editYear').value);
+                    if (!yearVal || isNaN(yearVal)) { toast('请输入有效年份', 'warning'); return; }
+                    if (isAdd) {
+                        const newRecord = {
+                            id: genId(),
+                            teacherId: teacherId,
+                            teacherName: teacher.name,
+                            teacherDepartment: teacher.department,
+                            trainingName: trainingName,
+                            dimension: document.getElementById('editDim').value,
+                            year: yearVal,
+                            credits: parseFloat(document.getElementById('editCredits').value) || 0,
+                            startDate: document.getElementById('editStart').value,
+                            endDate: document.getElementById('editEnd').value
+                        };
+                        trainings.push(newRecord);
+                        saveR(trainings);
+                        toast('培训记录添加成功', 'success');
+                    } else {
+                        let idx = trainings.findIndex(r => r.id === currentEditId);
+                        if (idx >= 0) {
+                            trainings[idx] = {
+                                ...trainings[idx],
+                                teacherId: teacherId,
+                                teacherName: teacher.name,
+                                teacherDepartment: teacher.department,
+                                trainingName: trainingName,
+                                dimension: document.getElementById('editDim').value,
+                                year: yearVal,
+                                credits: parseFloat(document.getElementById('editCredits').value) || 0,
+                                startDate: document.getElementById('editStart').value,
+                                endDate: document.getElementById('editEnd').value
+                            };
+                            saveR(trainings);
+                            toast('培训记录更新成功', 'success');
+                        }
+                    }
+                } else if (currentEditType === 'course') {
+                    let courses = getC();
+                    const teacherId = document.getElementById('editTeacherId').value;
+                    if (!teacherId) { toast('请选择教师', 'warning'); return; }
+                    const courseName = document.getElementById('editName').value.trim();
+                    if (!courseName) { toast('请输入课程名称', 'warning'); return; }
+                    const teacher = getT().find(t => t.id === teacherId);
+                    if (!teacher) { toast('教师不存在', 'error'); return; }
+                    const yearVal = parseInt(document.getElementById('editYear').value);
+                    if (!yearVal || isNaN(yearVal)) { toast('请输入有效年份', 'warning'); return; }
+                    if (isAdd) {
+                        const newRecord = {
+                            id: genId(),
+                            teacherId: teacherId,
+                            teacherName: teacher.name,
+                            teacherDepartment: teacher.department,
+                            courseName: courseName,
+                            level: document.getElementById('editLevel').value,
+                            year: yearVal,
+                            category: document.getElementById('editCategory').value
+                        };
+                        courses.push(newRecord);
+                        saveC(courses);
+                        toast('课程添加成功', 'success');
+                    } else {
+                        let idx = courses.findIndex(c => c.id === currentEditId);
+                        if (idx >= 0) {
+                            courses[idx] = {
+                                ...courses[idx],
+                                teacherId: teacherId,
+                                teacherName: teacher.name,
+                                teacherDepartment: teacher.department,
+                                courseName: courseName,
+                                level: document.getElementById('editLevel').value,
+                                year: yearVal,
+                                category: document.getElementById('editCategory').value
+                            };
+                            saveC(courses);
+                            toast('课程更新成功', 'success');
+                        }
+                    }
+                } else if (currentEditType === 'award') {
+                    let awards = getA();
+                    const teacherId = document.getElementById('editTeacherId').value;
+                    if (!teacherId) { toast('请选择教师', 'warning'); return; }
+                    const awardName = document.getElementById('editName').value.trim();
+                    if (!awardName) { toast('请输入奖励名称', 'warning'); return; }
+                    const teacher = getT().find(t => t.id === teacherId);
+                    if (!teacher) { toast('教师不存在', 'error'); return; }
+                    const yearVal = parseInt(document.getElementById('editYear').value);
+                    if (!yearVal || isNaN(yearVal)) { toast('请输入有效年份', 'warning'); return; }
+                    if (isAdd) {
+                        const newRecord = {
+                            id: genId(),
+                            teacherId: teacherId,
+                            teacherName: teacher.name,
+                            teacherDepartment: teacher.department,
+                            awardName: awardName,
+                            level: document.getElementById('editLevel').value,
+                            year: yearVal,
+                            remarks: document.getElementById('editRemarks').value
+                        };
+                        awards.push(newRecord);
+                        saveA(awards);
+                        toast('评优记录添加成功', 'success');
+                    } else {
+                        let idx = awards.findIndex(a => a.id === currentEditId);
+                        if (idx >= 0) {
+                            awards[idx] = {
+                                ...awards[idx],
+                                teacherId: teacherId,
+                                teacherName: teacher.name,
+                                teacherDepartment: teacher.department,
+                                awardName: awardName,
+                                level: document.getElementById('editLevel').value,
+                                year: yearVal,
+                                remarks: document.getElementById('editRemarks').value
+                            };
+                            saveA(awards);
+                            toast('评优记录更新成功', 'success');
+                        }
+                    }
+                } else if (currentEditType === 'contest') {
+                    let contests = getCT();
+                    const teacherId = document.getElementById('editTeacherId').value;
+                    if (!teacherId) { toast('请选择教师', 'warning'); return; }
+                    const contestName = document.getElementById('editName').value.trim();
+                    if (!contestName) { toast('请输入竞赛名称', 'warning'); return; }
+                    const teacher = getT().find(t => t.id === teacherId);
+                    if (!teacher) { toast('教师不存在', 'error'); return; }
+                    const yearVal = parseInt(document.getElementById('editYear').value);
+                    if (!yearVal || isNaN(yearVal)) { toast('请输入有效年份', 'warning'); return; }
+                    if (isAdd) {
+                        const newRecord = {
+                            id: genId(),
+                            teacherId: teacherId,
+                            teacherName: teacher.name,
+                            teacherDepartment: teacher.department,
+                            contestName: contestName,
+                            level: document.getElementById('editLevel').value,
+                            awardRank: document.getElementById('editAwardRank').value,
+                            year: yearVal,
+                            remarks: document.getElementById('editRemarks').value
+                        };
+                        contests.push(newRecord);
+                        saveCT(contests);
+                        toast('竞赛记录添加成功', 'success');
+                    } else {
+                        let idx = contests.findIndex(c => c.id === currentEditId);
+                        if (idx >= 0) {
+                            contests[idx] = {
+                                ...contests[idx],
+                                teacherId: teacherId,
+                                teacherName: teacher.name,
+                                teacherDepartment: teacher.department,
+                                contestName: contestName,
+                                level: document.getElementById('editLevel').value,
+                                awardRank: document.getElementById('editAwardRank').value,
+                                year: yearVal,
+                                remarks: document.getElementById('editRemarks').value
+                            };
+                            saveCT(contests);
+                            toast('竞赛记录更新成功', 'success');
+                        }
+                    }
+                }
+                window.closeEditModal();
+                if (currentEditType === 'teacher') renderTeachers();
+                else if (currentEditType === 'training') renderTrainings();
+                else if (currentEditType === 'course') renderCourses();
+                else if (currentEditType === 'award') renderAwards();
+                else if (currentEditType === 'contest') renderContests();
+                refreshAllUI();
+            };
+            window.closeEditModal = function() { document.getElementById('editModal').classList.remove('show'); };
+
+            // ========== 教师管理 ==========
+            function renderTeachers() {
+                let teachers = getT();
+                let depts = [...new Set(teachers.map(t => t.department).filter(Boolean))];
+                document.getElementById('teacherFilterBar').innerHTML =
+                    `<div class="filter-group"><label>姓名</label><input id="fTName"></div><div class="filter-group"><label>院系</label><select id="fTDept"><option value="">全部</option>${depts.map(d=>`<option>${d}</option>`).join('')}</select></div><button class="btn-filter btn-apply" onclick="applyTeacherFilter()">🔍</button><button class="btn-filter btn-reset" onclick="resetTeacherFilter()">↻</button>`;
+                document.getElementById('teacherTableCard').innerHTML = `
+            <div class="table-toolbar">
+              <div class="toolbar-left"><span>👨‍🏫 教师名单</span><span class="batch-info" id="teacherBatchInfo">已选 <span class="selected-count" id="teacherSelectedCount">0</span> 条</span></div>
+              <div class="toolbar-right">${isAdmin?`<button class="btn btn-warning btn-sm" id="btnBatchDeleteTeacher" onclick="batchDeleteTeachers()" disabled>🗑️ 批量删除</button><button class="btn btn-primary btn-sm" onclick="window.openAddModal('teacher')">＋添加教师</button>`:''}</div>
+            </div>
+            <div class="table-wrap"><table><thead><tr><th class="th-checkbox"><input type="checkbox" id="selectAllTeachers" onclick="toggleSelectAllTeachers()"></th><th>工号</th><th>姓名</th><th>院系</th><th>状态</th><th>画像</th>${isAdmin?'<th>操作</th>':''}</tr></thead><tbody id="teacherBody"></tbody></table></div>`;
+                filterAndRenderTeachers();
+            }
+
+            function filterAndRenderTeachers() {
+                let teachers = getT();
+                let name = (document.getElementById('fTName')?.value || '').toLowerCase();
+                let dept = document.getElementById('fTDept')?.value || '';
+                let filtered = teachers.filter(t => {
+                    if (name && !t.name.toLowerCase().includes(name)) return false;
+                    if (dept && dept !== '' && t.department !== dept) return false;
+                    return true;
+                });
+                document.getElementById('teacherBody').innerHTML = filtered.map(t => `
+              <tr><td class="td-checkbox"><input type="checkbox" class="teacher-checkbox" data-id="${t.id}" onchange="updateTeacherBatchUI()"></td>
+              <td>${t.employeeId}</td><td>${t.name}</td><td>${t.department||''}</td>
+              <td><span class="status-badge ${t.status==='在职'?'status-active':'status-inactive'}">${t.status||'在职'}</span></td>
+              <td><button class="btn btn-info btn-xs" onclick="window.viewTeacherProfile('${t.id}')">📋 画像</button></td>
+              ${isAdmin?`<td><button class="btn btn-outline btn-xs" onclick="window.openEditModal('teacher','${t.id}')">✏️编辑</button><button class="btn btn-danger btn-xs" onclick="deleteTeacher('${t.id}')">🗑️删除</button></td>`:''}
+            </tr>`).join('');
+                updateBatchUIHelper('teacher');
+            }
+            window.applyTeacherFilter = filterAndRenderTeachers;
+            window.resetTeacherFilter = () => { document.getElementById('fTName').value = '';
+                document.getElementById('fTDept').value = '';
+                filterAndRenderTeachers(); };
+            window.deleteTeacher = (id) => {
+                if (!requireAdmin()) return;
+                if (confirm('删除教师会删除所有关联记录')) {
+                    saveT(getT().filter(t => t.id !== id));
+                    saveR(getR().filter(r => r.teacherId !== id));
+                    saveC(getC().filter(c => c.teacherId !== id));
+                    saveA(getA().filter(a => a.teacherId !== id));
+                    saveCT(getCT().filter(c => c.teacherId !== id));
+                    refreshAllUI();
+                    toast('已删除', 'info');
+                }
+            };
+            window.batchDeleteTeachers = () => batchDeleteHelper('teacher', getT, saveT, renderTeachers);
+            window.toggleSelectAllTeachers = () => toggleSelectAllHelper('teacher');
+            window.updateTeacherBatchUI = () => updateBatchUIHelper('teacher');
+
+            // ========== 培训记录 ==========
+            function renderTrainings() {
+                let trainings = getR();
+                let teachers = getT();
+                let depts = [...new Set(teachers.map(t => t.department).filter(Boolean))];
+                let dims = [...new Set(trainings.map(t => t.dimension).filter(Boolean))];
+                let years = [...new Set(trainings.map(t => t.year).filter(y => y))].sort((a, b) => b - a);
+                document.getElementById('trainingFilterBar').innerHTML =
+                    `<div class="filter-group"><label>教师</label><input id="fRName"></div><div class="filter-group"><label>单位</label><select id="fRDept"><option value="">全部</option>${depts.map(d=>`<option>${d}</option>`).join('')}</select></div><div class="filter-group"><label>维度</label><select id="fRDim"><option value="">全部</option>${dims.map(d=>`<option>${d}</option>`).join('')}</select></div><div class="filter-group"><label>年度</label><select id="fRYear"><option value="">全部</option>${years.map(y=>`<option>${y}</option>`).join('')}</select></div><button class="btn-filter btn-apply" onclick="applyTrainingFilter()">🔍</button><button class="btn-filter btn-reset" onclick="resetTrainingFilter()">↻</button>`;
+                document.getElementById('trainingTableCard').innerHTML = `
+            <div class="table-toolbar">
+              <div class="toolbar-left"><span>📚 培训记录</span><span class="batch-info" id="trainingBatchInfo">已选 <span class="selected-count" id="trainingSelectedCount">0</span> 条</span></div>
+              <div class="toolbar-right">${isAdmin?`<button class="btn btn-warning btn-sm" id="btnBatchDeleteTraining" onclick="batchDeleteTrainings()" disabled>🗑️ 批量删除</button><button class="btn btn-primary btn-sm" onclick="window.openAddModal('training')">＋添加培训</button>`:''}</div>
+            </div>
+            <div class="table-wrap"><table><thead><tr><th class="th-checkbox"><input type="checkbox" id="selectAllTrainings" onclick="toggleSelectAllTrainings()"></th><th>教师</th><th>单位</th><th>培训名称</th><th>维度</th><th>年度</th><th>学分</th>${isAdmin?'<th>操作</th>':''}</tr></thead><tbody id="trainingBody"></tbody></table></div>`;
+                filterAndRenderTrainings();
+            }
+
+            function filterAndRenderTrainings() {
+                let trainings = getR();
+                let name = (document.getElementById('fRName')?.value || '').toLowerCase();
+                let dept = document.getElementById('fRDept')?.value || '';
+                let dim = document.getElementById('fRDim')?.value || '';
+                let year = document.getElementById('fRYear')?.value || '';
+                let filtered = trainings.filter(t => {
+                    if (name && !(t.teacherName || '').toLowerCase().includes(name)) return false;
+                    if (dept && t.teacherDepartment !== dept) return false;
+                    if (dim && t.dimension !== dim) return false;
+                    if (year && t.year != year) return false;
+                    return true;
+                });
+                document.getElementById('trainingBody').innerHTML = filtered.map(t => `
+              <tr><td class="td-checkbox"><input type="checkbox" class="training-checkbox" data-id="${t.id}" onchange="updateTrainingBatchUI()"></td>
+              <td>${t.teacherName}</td><td>${t.teacherDepartment||''}</td><td>${t.trainingName}</td>
+              <td><span class="dim-tag">${t.dimension}</span></td><td>${t.year}</td><td>${t.credits||0}</td>
+              ${isAdmin?`<td><button class="btn btn-outline btn-xs" onclick="window.openEditModal('training','${t.id}')">✏️编辑</button><button class="btn btn-danger btn-xs" onclick="deleteTraining('${t.id}')">🗑️删除</button></td>`:''}
+            </tr>`).join('');
+                updateBatchUIHelper('training');
+            }
+            window.applyTrainingFilter = filterAndRenderTrainings;
+            window.resetTrainingFilter = () => { document.getElementById('fRName').value = '';
+                document.getElementById('fRDept').value = '';
+                document.getElementById('fRDim').value = '';
+                document.getElementById('fRYear').value = '';
+                filterAndRenderTrainings(); };
+            window.deleteTraining = (id) => {
+                if (!requireAdmin()) return;
+                if (confirm('删除培训记录？')) { saveR(getR().filter(r => r.id !== id));
+                    renderTrainings();
+                    refreshAllUI();
+                    toast('已删除', 'info'); }
+            };
+            window.batchDeleteTrainings = () => batchDeleteHelper('training', getR, saveR, renderTrainings);
+            window.toggleSelectAllTrainings = () => toggleSelectAllHelper('training');
+            window.updateTrainingBatchUI = () => updateBatchUIHelper('training');
+
+            // ========== 一流课程 ==========
+            let courseChart = null;
+
+            function renderCourses() {
+                let teachers = getT();
+                let courses = getC();
+                let depts = [...new Set(teachers.map(t => t.department).filter(Boolean))];
+                document.getElementById('courseFilterBar').innerHTML =
+                    `<div class="filter-group"><label>教师姓名</label><input id="courseFilterTeacher"></div><div class="filter-group"><label>教学单位</label><select id="courseFilterDept"><option value="">全部</option>${depts.map(d=>`<option>${d}</option>`).join('')}</select></div><div class="filter-group"><label>级别</label><select id="courseFilterLevel"><option value="">全部</option><option>国家级</option><option>省级</option><option>校级</option></select></div><div class="filter-group"><label>起始年份</label><input id="courseFilterYearFrom" type="number"></div><div class="filter-group"><label>结束年份</label><input id="courseFilterYearTo" type="number"></div><button class="btn-filter btn-apply" onclick="applyCourseFilter()">🔍</button><button class="btn-filter btn-reset" onclick="resetCourseFilter()">↻</button>`;
+                document.getElementById('courseTableCard').innerHTML = `
+            <div class="table-toolbar">
+              <div class="toolbar-left"><span>🏆 一流课程</span><span class="batch-info" id="courseBatchInfo">已选 <span class="selected-count" id="courseSelectedCount">0</span> 条</span></div>
+              <div class="toolbar-right">${isAdmin?`<button class="btn btn-warning btn-sm" id="btnBatchDeleteCourse" onclick="batchDeleteCourses()" disabled>🗑️ 批量删除</button><button class="btn btn-primary btn-sm" onclick="window.openAddModal('course')">＋添加课程</button><button class="btn btn-success btn-sm" onclick="exportCoursesToCSV()">📎 导出当前列表</button>`:`<button class="btn btn-success btn-sm" onclick="exportCoursesToCSV()">📎 导出当前列表</button>`}</div>
+            </div>
+            <div class="table-wrap"><table><thead><tr><th class="th-checkbox"><input type="checkbox" id="selectAllCourses" onclick="toggleSelectAllCourses()"></th><th>#</th><th>教师</th><th>教学单位</th><th>课程名称</th><th>级别</th><th>年份</th><th>类别</th>${isAdmin?'<th>操作</th>':''}</tr></thead><tbody id="courseBody"></tbody></table></div>`;
+                applyCourseFilterAndRender();
+            }
+
+            function applyCourseFilterAndRender() {
+                let courses = getC();
+                let teachers = getT();
+                const teacherMap = Object.fromEntries(teachers.map(t => [t.id, t]));
+                const teacherName = (document.getElementById('courseFilterTeacher')?.value || '').toLowerCase();
+                const dept = document.getElementById('courseFilterDept')?.value || '';
+                const level = document.getElementById('courseFilterLevel')?.value || '';
+                const yearFrom = parseInt(document.getElementById('courseFilterYearFrom')?.value) || null;
+                const yearTo = parseInt(document.getElementById('courseFilterYearTo')?.value) || null;
+                let filtered = courses.filter(c => {
+                    const t = teacherMap[c.teacherId];
+                    if (!t) return false;
+                    if (teacherName && !t.name.toLowerCase().includes(teacherName)) return false;
+                    if (dept && t.department !== dept) return false;
+                    if (level && c.level !== level) return false;
+                    if (yearFrom && c.year < yearFrom) return false;
+                    if (yearTo && c.year > yearTo) return false;
+                    return true;
+                });
+                document.getElementById('courseBody').innerHTML = filtered.map((c, idx) => {
+                    const t = teacherMap[c.teacherId] || {};
+                    return `<tr><td class="td-checkbox"><input type="checkbox" class="course-checkbox" data-id="${c.id}" onchange="updateCourseBatchUI()"></td><td>${idx+1}</td><td>${t.name||'?'}</td><td>${t.department||''}</td><td>${c.courseName}</td><td><span class="level-tag level-${c.level}">${c.level}</span></td><td>${c.year}</td><td>${c.category||'-'}</td>${isAdmin?`<td><button class="btn btn-outline btn-xs" onclick="window.openEditModal('course','${c.id}')">✏️编辑</button><button class="btn btn-danger btn-xs" onclick="deleteCourse('${c.id}')">🗑️删除</button></td>`:''}</tr>`;
+                }).join('');
+                updateCourseBatchUI();
+                updateCourseLevelChart(filtered);
+            }
+
+            function updateCourseLevelChart(courses) {
+                let levelCount = { '国家级': 0, '省级': 0, '校级': 0 };
+                courses.forEach(c => { if (levelCount[c.level] !== undefined) levelCount[c.level]++;
+                    else levelCount['校级']++; });
+                const labelsWithCount = Object.keys(levelCount).map(level => `${level} (${levelCount[level]})`);
+                const ctx = document.getElementById('courseLevelChart')?.getContext('2d');
+                if (ctx) {
+                    if (courseChart) courseChart.destroy();
+                    courseChart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: labelsWithCount,
+                            datasets: [{ data: Object.values(levelCount),
+                                backgroundColor: ['#f9e79f', '#d5f5e3', '#d4e6f1'] }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: { position: 'bottom' },
+                                tooltip: { callbacks: { label: function(context) { return `${context.label}: ${context.raw}条`; } } }
+                            }
+                        }
+                    });
+                }
+            }
+            window.applyCourseFilter = applyCourseFilterAndRender;
+            window.resetCourseFilter = () => { document.getElementById('courseFilterTeacher').value = '';
+                document.getElementById('courseFilterDept').value = '';
+                document.getElementById('courseFilterLevel').value = '';
+                document.getElementById('courseFilterYearFrom').value = '';
+                document.getElementById('courseFilterYearTo').value = '';
+                applyCourseFilterAndRender(); };
+            window.updateCourseBatchUI = () => updateBatchUIHelper('course');
+            window.toggleSelectAllCourses = () => toggleSelectAllHelper('course');
+            window.batchDeleteCourses = () => batchDeleteHelper('course', getC, saveC, renderCourses);
+            window.deleteCourse = (id) => {
+                if (!requireAdmin()) return;
+                if (confirm('删除课程？')) { saveC(getC().filter(c => c.id !== id));
+                    renderCourses();
+                    refreshAllUI();
+                    toast('已删除', 'info'); }
+            };
+            window.exportCoursesToCSV = function() {
+                let courses = getC();
+                let teachers = getT();
+                let teacherMap = Object.fromEntries(teachers.map(t => [t.id, t]));
+                let csvRows = [
+                    ['教师姓名', '教学单位', '课程名称', '级别', '年份', '类别']
+                ];
+                courses.forEach(c => { let t = teacherMap[c.teacherId]; if (t) csvRows.push([t.name, t
+                        .department || '', c.courseName, c.level, c.year, c.category || ''
+                    ]); });
+                let csvContent = csvRows.map(row => row.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(
+                    ',')).join('\n');
+                let blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv' });
+                let a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = '一流课程列表.csv';
+                a.click();
+                toast('导出成功', 'success');
+            };
+
+            // ========== 评优评先 ==========
+            function renderAwards() {
+                let awards = getA();
+                let teachers = getT();
+                let depts = [...new Set(teachers.map(t => t.department).filter(Boolean))];
+                let years = [...new Set(awards.map(a => a.year).filter(y => y))].sort((a, b) => b - a);
+                document.getElementById('awardFilterBar').innerHTML =
+                    `<div class="filter-group"><label>教师</label><input id="fAName"></div><div class="filter-group"><label>单位</label><select id="fADept"><option value="">全部</option>${depts.map(d=>`<option>${d}</option>`).join('')}</select></div><div class="filter-group"><label>年度</label><select id="fAYear"><option value="">全部</option>${years.map(y=>`<option>${y}</option>`).join('')}</select></div><button class="btn-filter btn-apply" onclick="applyAwardFilter()">🔍</button><button class="btn-filter btn-reset" onclick="resetAwardFilter()">↻</button>`;
+                document.getElementById('awardTableCard').innerHTML = `
+            <div class="table-toolbar">
+              <div class="toolbar-left"><span>🎖️ 评优评先</span><span class="batch-info" id="awardBatchInfo">已选 <span class="selected-count" id="awardSelectedCount">0</span> 条</span></div>
+              <div class="toolbar-right">${isAdmin?`<button class="btn btn-warning btn-sm" id="btnBatchDeleteAward" onclick="batchDeleteAwards()" disabled>🗑️ 批量删除</button><button class="btn btn-primary btn-sm" onclick="window.openAddModal('award')">＋添加评优</button>`:''}</div>
+            </div>
+            <div class="table-wrap"><table><thead><tr><th class="th-checkbox"><input type="checkbox" id="selectAllAwards" onclick="toggleSelectAllAwards()"></th><th>教师</th><th>单位</th><th>奖励名称</th><th>级别</th><th>年份</th>${isAdmin?'<th>操作</th>':''}</tr></thead><tbody id="awardBody"></tbody></table></div>`;
+                filterAndRenderAwards();
+            }
+
+            function filterAndRenderAwards() {
+                let awards = getA();
+                let name = (document.getElementById('fAName')?.value || '').toLowerCase();
+                let dept = document.getElementById('fADept')?.value || '';
+                let year = document.getElementById('fAYear')?.value || '';
+                let filtered = awards.filter(a => {
+                    if (name && !(a.teacherName || '').toLowerCase().includes(name)) return false;
+                    if (dept && a.teacherDepartment !== dept) return false;
+                    if (year && a.year != year) return false;
+                    return true;
+                });
+                document.getElementById('awardBody').innerHTML = filtered.map(a => `
+              <tr><td class="td-checkbox"><input type="checkbox" class="award-checkbox" data-id="${a.id}" onchange="updateAwardBatchUI()"></td>
+              <td>${a.teacherName}</td><td>${a.teacherDepartment||''}</td><td>${a.awardName}</td>
+              <td><span class="level-tag level-${a.level}">${a.level}</span></td><td>${a.year}</td>
+              ${isAdmin?`<td><button class="btn btn-outline btn-xs" onclick="window.openEditModal('award','${a.id}')">✏️编辑</button><button class="btn btn-danger btn-xs" onclick="deleteAward('${a.id}')">🗑️删除</button></td>`:''}
+            </tr>`).join('');
+                updateBatchUIHelper('award');
+            }
+            window.applyAwardFilter = filterAndRenderAwards;
+            window.resetAwardFilter = () => { document.getElementById('fAName').value = '';
+                document.getElementById('fADept').value = '';
+                document.getElementById('fAYear').value = '';
+                filterAndRenderAwards(); };
+            window.deleteAward = (id) => {
+                if (!requireAdmin()) return;
+                if (confirm('删除评优？')) { saveA(getA().filter(a => a.id !== id));
+                    renderAwards();
+                    refreshAllUI();
+                    toast('已删除', 'info'); }
+            };
+            window.batchDeleteAwards = () => batchDeleteHelper('award', getA, saveA, renderAwards);
+            window.toggleSelectAllAwards = () => toggleSelectAllHelper('award');
+            window.updateAwardBatchUI = () => updateBatchUIHelper('award');
+
+            // ========== 教学竞赛 ==========
+            function renderContests() {
+                let contests = getCT();
+                let teachers = getT();
+                let depts = [...new Set(teachers.map(t => t.department).filter(Boolean))];
+                let years = [...new Set(contests.map(c => c.year).filter(y => y))].sort((a, b) => b - a);
+                document.getElementById('contestFilterBar').innerHTML =
+                    `<div class="filter-group"><label>教师</label><input id="fCTName"></div><div class="filter-group"><label>单位</label><select id="fCTDept"><option value="">全部</option>${depts.map(d=>`<option>${d}</option>`).join('')}</select></div><div class="filter-group"><label>年度</label><select id="fCTYear"><option value="">全部</option>${years.map(y=>`<option>${y}</option>`).join('')}</select></div><button class="btn-filter btn-apply" onclick="applyContestFilter()">🔍</button><button class="btn-filter btn-reset" onclick="resetContestFilter()">↻</button>`;
+                document.getElementById('contestTableCard').innerHTML = `
+            <div class="table-toolbar">
+              <div class="toolbar-left"><span>🏅 教学竞赛</span><span class="batch-info" id="contestBatchInfo">已选 <span class="selected-count" id="contestSelectedCount">0</span> 条</span></div>
+              <div class="toolbar-right">${isAdmin?`<button class="btn btn-warning btn-sm" id="btnBatchDeleteContest" onclick="batchDeleteContests()" disabled>🗑️ 批量删除</button><button class="btn btn-primary btn-sm" onclick="window.openAddModal('contest')">＋添加竞赛</button>`:''}</div>
+            </div>
+            <div class="table-wrap"><table><thead><tr><th class="th-checkbox"><input type="checkbox" id="selectAllContests" onclick="toggleSelectAllContests()"></th><th>教师</th><th>单位</th><th>竞赛名称</th><th>级别</th><th>获奖等级</th><th>年份</th>${isAdmin?'<th>操作</th>':''}</tr></thead><tbody id="contestBody"></tbody></table></div>`;
+                filterAndRenderContests();
+            }
+
+            function filterAndRenderContests() {
+                let contests = getCT();
+                let name = (document.getElementById('fCTName')?.value || '').toLowerCase();
+                let dept = document.getElementById('fCTDept')?.value || '';
+                let year = document.getElementById('fCTYear')?.value || '';
+                let filtered = contests.filter(c => {
+                    if (name && !(c.teacherName || '').toLowerCase().includes(name)) return false;
+                    if (dept && c.teacherDepartment !== dept) return false;
+                    if (year && c.year != year) return false;
+                    return true;
+                });
+                document.getElementById('contestBody').innerHTML = filtered.map(c => `
+              <tr><td class="td-checkbox"><input type="checkbox" class="contest-checkbox" data-id="${c.id}" onchange="updateContestBatchUI()"></td>
+              <td>${c.teacherName}</td><td>${c.teacherDepartment||''}</td><td>${c.contestName}</td>
+              <td><span class="level-tag level-${c.level}">${c.level}</span></td><td>${c.awardRank||''}</td><td>${c.year}</td>
+              ${isAdmin?`<td><button class="btn btn-outline btn-xs" onclick="window.openEditModal('contest','${c.id}')">✏️编辑</button><button class="btn btn-danger btn-xs" onclick="deleteContest('${c.id}')">🗑️删除</button></td>`:''}
+            </tr>`).join('');
+                updateBatchUIHelper('contest');
+            }
+            window.applyContestFilter = filterAndRenderContests;
+            window.resetContestFilter = () => { document.getElementById('fCTName').value = '';
+                document.getElementById('fCTDept').value = '';
+                document.getElementById('fCTYear').value = '';
+                filterAndRenderContests(); };
+            window.deleteContest = (id) => {
+                if (!requireAdmin()) return;
+                if (confirm('删除竞赛？')) { saveCT(getCT().filter(c => c.id !== id));
+                    renderContests();
+                    refreshAllUI();
+                    toast('已删除', 'info'); }
+            };
+            window.batchDeleteContests = () => batchDeleteHelper('contest', getCT, saveCT, renderContests);
+            window.toggleSelectAllContests = () => toggleSelectAllHelper('contest');
+            window.updateContestBatchUI = () => updateBatchUIHelper('contest');
+
+            // ========== 导入卡片与上传处理（完整实现） ==========
+            function renderImportCards() {
+                const uploadHtml = (type, title, icon, statusId) =>
+                    `<div class="cx-card"><div class="card-header"><div class="card-icon">${icon}</div><div class="card-title">${title}</div></div><div class="import-actions"><button class="btn btn-outline btn-sm" onclick="window.download${type}Template()">📥 模板</button>${isAdmin ? `<label class="btn-upload">📤 上传<input type="file" accept=".xlsx,.xls,.csv" onchange="window.handle${type}File(this)" hidden></label>` : '<span class="btn-upload" style="opacity:0.6;pointer-events:none;">🔒 登录后上传</span>'}</div><div id="${statusId}" class="mt-2"></div></div>`;
+                document.getElementById('importCards').innerHTML =
+                    uploadHtml('Teacher', '教师信息', '👨‍🏫', 'teacherFileStatus') +
+                    uploadHtml('Training', '培训记录', '📚', 'trainingFileStatus') +
+                    uploadHtml('Course', '一流课程', '🏆', 'courseFileStatus') +
+                    uploadHtml('Award', '评优评先', '🎖️', 'awardFileStatus') +
+                    uploadHtml('Contest', '教学竞赛', '🏅', 'contestFileStatus');
+            }
+
+            // 教师导入
+            window.handleTeacherFile = async function(input) {
+                if (!requireAdmin()) return;
+                const file = input.files[0];
+                if (!file) return;
+                const statusDiv = document.getElementById('teacherFileStatus');
+                statusDiv.innerHTML = '⏳ 正在解析...';
+                try {
+                    const data = await parseExcel(file);
+                    let teachers = getT();
+                    let added = 0;
+                    data.forEach(row => {
+                        const name = (row['姓名'] || '').trim();
+                        if (!name) return;
+                        const newTeacher = {
+                            id: genId(),
+                            name: name,
+                            employeeId: (row['工号'] || '').toString().trim() || ('auto_' + Date.now()),
+                            department: row['教学单位'] || '',
+                            title: row['职称'] || '',
+                            education: row['学历'] || '',
+                            joinYear: parseInt(row['入职年份']) || null,
+                            status: row['状态'] || '在职'
+                        };
+                        teachers.push(newTeacher);
+                        added++;
+                    });
+                    saveT(teachers);
+                    refreshAllUI();
+                    statusDiv.innerHTML = `✅ 成功导入 ${added} 条教师记录`;
+                    toast(`教师导入完成，共${added}条`, 'success');
+                } catch (err) {
+                    statusDiv.innerHTML = `❌ 导入失败：${err.message}`;
+                    toast('导入失败', 'error');
+                }
+                input.value = '';
+            };
+
+            // 通用关联导入辅助函数
+            async function importWithTeacher(file, type, statusId) {
+                const statusDiv = document.getElementById(statusId);
+                statusDiv.innerHTML = '⏳ 正在解析...';
+                try {
+                    const data = await parseExcel(file);
+                    let teachers = getT();
+                    let records = [];
+                    let added = 0;
+                    const saveFunc = type === 'training' ? saveR : type === 'course' ? saveC : type === 'award' ? saveA : saveCT;
+                    const getFunc = type === 'training' ? getR : type === 'course' ? getC : type === 'award' ? getA : getCT;
+
+                    data.forEach(row => {
+                        const teacherName = (row['教师姓名'] || '').trim();
+                        if (!teacherName) return;
+                        const teacher = findOrCreateTeacherByName(teacherName, teachers);
+                        let record = {
+                            id: genId(),
+                            teacherId: teacher.id,
+                            teacherName: teacher.name,
+                            teacherDepartment: teacher.department
+                        };
+                        switch (type) {
+                            case 'training':
+                                record.trainingName = row['培训名称'] || '';
+                                record.dimension = row['维度'] || '教学能力';
+                                record.startDate = row['开始日期'] || '';
+                                record.endDate = row['结束日期'] || '';
+                                record.credits = parseFloat(row['学分']) || 0;
+                                record.year = parseInt(row['年份']) || new Date().getFullYear();
+                                break;
+                            case 'course':
+                                record.courseName = row['课程名称'] || '';
+                                record.level = row['级别'] || '校级';
+                                record.year = parseInt(row['年份']) || new Date().getFullYear();
+                                record.category = row['类别'] || '';
+                                break;
+                            case 'award':
+                                record.awardName = row['奖励名称'] || '';
+                                record.level = row['级别'] || '校级';
+                                record.year = parseInt(row['年份']) || new Date().getFullYear();
+                                record.remarks = row['备注'] || '';
+                                break;
+                            case 'contest':
+                                record.contestName = row['竞赛名称'] || '';
+                                record.level = row['级别'] || '校级';
+                                record.awardRank = row['获奖等级'] || '';
+                                record.year = parseInt(row['年份']) || new Date().getFullYear();
+                                record.remarks = row['备注'] || '';
+                                break;
+                        }
+                        records.push(record);
+                        added++;
+                    });
+
+                    const existingRecords = getFunc();
+                    const merged = existingRecords.concat(records);
+                    saveFunc(merged);
+                    saveT(teachers); // 保存可能新增的教师
+                    refreshAllUI();
+                    statusDiv.innerHTML = `✅ 成功导入 ${added} 条记录`;
+                    toast(`导入完成，共${added}条`, 'success');
+                } catch (err) {
+                    statusDiv.innerHTML = `❌ 导入失败：${err.message}`;
+                    toast('导入失败', 'error');
+                }
+            }
+
+            window.handleTrainingFile = async function(input) {
+                if (!requireAdmin()) return;
+                await importWithTeacher(input.files[0], 'training', 'trainingFileStatus');
+                input.value = '';
+            };
+            window.handleCourseFile = async function(input) {
+                if (!requireAdmin()) return;
+                await importWithTeacher(input.files[0], 'course', 'courseFileStatus');
+                input.value = '';
+            };
+            window.handleAwardFile = async function(input) {
+                if (!requireAdmin()) return;
+                await importWithTeacher(input.files[0], 'award', 'awardFileStatus');
+                input.value = '';
+            };
+            window.handleContestFile = async function(input) {
+                if (!requireAdmin()) return;
+                await importWithTeacher(input.files[0], 'contest', 'contestFileStatus');
+                input.value = '';
+            };
+
+            // 模板下载（保持不变）
+            window.downloadTeacherTemplate = () => downloadBlob(
+                '姓名,工号,教学单位,职称,学历,入职年份,状态\n张三,001,计算机学院,教授,博士,2015,在职', '教师模板.csv');
+            window.downloadTrainingTemplate = () => downloadBlob(
+                '教师姓名,培训名称,维度,开始日期,结束日期,培训时长,学分,年份\n张三,人工智能研修班,教学能力,2024-03-01,2024-03-05,40,3,2024',
+                '培训模板.csv');
+            window.downloadCourseTemplate = () => downloadBlob('教师姓名,课程名称,级别,类别,年份\n张三,数据结构,国家级,线上课程,2023',
+                '一流课程模板.csv');
+            window.downloadAwardTemplate = () => downloadBlob('教师姓名,奖励名称,级别,年份,备注\n张三,优秀教师,校级,2022,年度考核优秀',
+            '评优评先模板.csv');
+            window.downloadContestTemplate = () => downloadBlob(
+                '教师姓名,竞赛名称,级别,获奖等级,年份,备注\n张三,青年教师教学竞赛,地市级,一等奖,2023,市级决赛', '教学竞赛模板.csv');
+
+            function downloadBlob(csv, filename) { const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = filename;
+                a.click(); }
+
+            window.exportAllData = function() {
+                if (!requireAdmin()) return;
+                let data = { teachers: getT(), trainings: getR(), courses: getC(), awards: getA(), contests: getCT() };
+                let blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                let a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = '档案备份.json';
+                a.click();
+                toast('备份成功', 'success');
+            };
+            window.handleRestoreFile = function(e) {
+                if (!requireAdmin()) return;
+                let file = e.target.files[0];
+                if (!file) return;
+                let reader = new FileReader();
+                reader.onload = ev => {
+                    try {
+                        let data = JSON.parse(ev.target.result);
+                        if (!data.teachers) throw new Error();
+                        if (!confirm('覆盖当前所有数据？')) return;
+                        saveT(data.teachers || []);
+                        saveR(data.trainings || []);
+                        saveC(data.courses || []);
+                        saveA(data.awards || []);
+                        saveCT(data.contests || []);
+                        refreshAllUI();
+                        toast('恢复成功', 'success');
+                    } catch (e) { toast('文件无效', 'error'); }
+                };
+                reader.readAsText(file);
+                e.target.value = '';
+            };
+            window.clearAllData = function() {
+                if (!requireAdmin()) return;
+                if (confirm('清空所有数据？不可恢复')) { localStorage.clear();
+                    refreshAllUI();
+                    toast('已清空', 'info'); }
+            };
+
+            function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&')
+                        return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+
+            // 页面切换
+            function switchPage(page) {
+                document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.getElementById('page-' + page).classList.add('active');
+                document.querySelector(`.nav-tab[data-page="${page}"]`).classList.add('active');
+                if (page === 'dashboard') { updateDashboardDeptOptions();
+                    refreshDashboardWithDept(); }
+                if (page === 'teachers') renderTeachers();
+                if (page === 'trainings') renderTrainings();
+                if (page === 'courses') renderCourses();
+                if (page === 'awards') renderAwards();
+                if (page === 'contests') renderContests();
+                if (page === 'import') renderImportCards();
+            }
+            document.getElementById('navTabs').addEventListener('click', e => { let tab = e.target.closest('.nav-tab');
+                if (tab) switchPage(tab.dataset.page); });
+
+            const restoreInput = document.createElement('input');
+            restoreInput.type = 'file';
+            restoreInput.id = 'restoreFileInput';
+            restoreInput.accept = '.json';
+            restoreInput.hidden = true;
+            restoreInput.onchange = window.handleRestoreFile;
+            document.body.appendChild(restoreInput);
+            checkLoginStatus();
+            window.addEventListener('load', () => {
+                updateDashboardDeptOptions();
+                refreshDashboardWithDept();
+                renderTeachers();
+                renderTrainings();
+                renderCourses();
+                renderAwards();
+                renderContests();
+                renderImportCards();
+            });
+        })();
+    </script>
+</body>
+</html>
